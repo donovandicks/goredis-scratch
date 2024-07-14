@@ -23,6 +23,8 @@ type Value struct {
 	Array []Value
 }
 
+func NewOKValue() Value { return Value{Typ: String, Str: "OK"} }
+
 func NewStringValue(s string) Value {
 	return Value{Typ: String, Str: s}
 }
