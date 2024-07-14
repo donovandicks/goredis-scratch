@@ -51,6 +51,7 @@ func get(args []Value) Value {
 
 	Sets.RLock()
 	val, ok := Sets.data[args[0].Bulk]
+	Sets.RUnlock()
 	if !ok {
 		return NewNullValue()
 	}
