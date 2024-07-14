@@ -6,6 +6,7 @@ import (
 	"net"
 	"strings"
 
+	"github.com/donovandicks/goredis/interpreter"
 	"github.com/donovandicks/goredis/resp"
 )
 
@@ -45,7 +46,7 @@ func (s *Server) recv() {
 	}
 
 	defer conn.Close()
-	interpreter := resp.Interpreter{}
+	interpreter := interpreter.NewInterpreter()
 
 	for {
 		parser := resp.NewParer(conn)
