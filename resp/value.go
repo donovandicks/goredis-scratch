@@ -8,11 +8,11 @@ type ValueType string
 
 const (
 	Array   ValueType = "array"
-	Bulk              = "bulk"
-	Error             = "error"
-	Integer           = "integer"
-	String            = "string"
-	Null              = "null"
+	Bulk    ValueType = "bulk"
+	Error   ValueType = "error"
+	Integer ValueType = "integer"
+	String  ValueType = "string"
+	Null    ValueType = "null"
 )
 
 type Value struct {
