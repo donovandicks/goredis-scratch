@@ -6,6 +6,19 @@ import (
 	"github.com/donovandicks/goredis/resp"
 )
 
+var (
+	WriteCommands = map[string]struct{}{
+		"SET":  {},
+		"HSET": {},
+	}
+)
+
+// Check if the given command writes values
+func CommandIsWrite(command string) bool {
+	_, ok := WriteCommands[command]
+	return ok
+}
+
 type Interpreter struct {
 	handlers  map[string]func([]resp.Value) resp.Value
 	kvStore   KVStore
