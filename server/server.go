@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/donovandicks/goredis/interpreter"
+	"github.com/donovandicks/goredis/persistence"
 	"github.com/donovandicks/goredis/resp"
 )
 
@@ -16,10 +17,19 @@ const (
 
 type Server struct {
 	listener net.Listener
+	interp   *interpreter.Interpreter
+	persist  persistence.Strategy
 }
 
-func NewServer() *Server {
-	return &Server{}
+func NewServer(persist persistence.Strategy) *Server {
+	interp := interpreter.NewInterpreter()
+
+	persist.Read(interp)
+
+	return &Server{
+		interp:  interp,
+		persist: persist,
+	}
 }
 
 func (s *Server) Run() {
@@ -46,12 +56,15 @@ func (s *Server) recv() {
 	}
 
 	defer conn.Close()
-	interpreter := interpreter.NewInterpreter()
 
 	for {
-		parser := resp.NewParer(conn)
+		parser := resp.NewParser(conn)
 		value, err := parser.Read()
 		if err != nil {
+			if err.Error() == "EOF" {
+				return
+			}
+
 			slog.Error(err.Error())
 			return
 		}
@@ -65,9 +78,13 @@ func (s *Server) recv() {
 		command := strings.ToUpper(value.Array[0].Bulk)
 		args := value.Array[1:]
 
-		writer := resp.NewWriter(conn)
+		writer := NewWriter(conn)
 
-		out := interpreter.Interpret(command, args)
+		out := s.interp.Interpret(command, args)
 		writer.Write(out)
+
+		if out.Typ != resp.Error && interpreter.CommandIsWrite(command) {
+			s.persist.Write(value)
+		}
 	}
 }

@@ -20,7 +20,7 @@ type Parser struct {
 	reader *bufio.Reader
 }
 
-func NewParer(reader io.Reader) *Parser {
+func NewParser(reader io.Reader) *Parser {
 	return &Parser{
 		reader: bufio.NewReader(reader),
 	}
@@ -132,5 +132,21 @@ func (p *Parser) Read() (Value, error) {
 	default:
 		slog.Info(fmt.Sprintf("Unsupported type: %v", typ))
 		return Value{}, nil
+	}
+}
+
+func (p *Parser) ReadMany() ([]Value, error) {
+	vals := make([]Value, 0)
+	for {
+		val, err := p.Read()
+		if err != nil {
+			if err.Error() == "EOF" {
+				return vals, nil
+			}
+
+			return nil, err
+		}
+
+		vals = append(vals, val)
 	}
 }
